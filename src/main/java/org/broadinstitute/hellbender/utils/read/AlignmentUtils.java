@@ -7,7 +7,6 @@ import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.CigarOperator;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
 import org.broadinstitute.hellbender.exceptions.GATKException;
 import org.broadinstitute.hellbender.utils.BaseUtils;
@@ -18,6 +17,7 @@ import org.broadinstitute.hellbender.utils.param.ParamUtils;
 import org.broadinstitute.hellbender.utils.pileup.PileupElement;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAligner;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignment;
+import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignmentConstants;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -33,7 +33,7 @@ public final class AlignmentUtils {
     private AlignmentUtils() { }
 
     /**
-     * Aligns reads the haplotype, and then projects this alignment of read -> hap onto the reference
+     * Aligns reads to the haplotype, and then projects this alignment of read -> hap onto the reference
      * via the alignment of haplotype (via its getCigar) method.
      *
      * @param originalRead the read we want to write aligned to the reference genome
@@ -61,7 +61,7 @@ public final class AlignmentUtils {
         if ( referenceStart < 1 ) { throw new IllegalArgumentException("reference start much be >= 1 but got " + referenceStart); }
 
         // compute the smith-waterman alignment of read -> haplotype
-        final SmithWatermanAlignment readToHaplotypeSWAlignment = aligner.align(haplotype.getBases(), originalRead.getBases(), CigarUtils.ALIGNMENT_TO_BEST_HAPLOTYPE_SW_PARAMETERS, SWOverhangStrategy.SOFTCLIP);
+        final SmithWatermanAlignment readToHaplotypeSWAlignment = aligner.align(haplotype.getBases(), originalRead.getBases(), SmithWatermanAlignmentConstants.ALIGNMENT_TO_BEST_HAPLOTYPE_SW_PARAMETERS, SWOverhangStrategy.SOFTCLIP);
         if ( readToHaplotypeSWAlignment.getAlignmentOffset() == -1 ) {
             // sw can fail (reasons not clear) so if it happens just don't realign the read
             return originalRead;
@@ -88,9 +88,6 @@ public final class AlignmentUtils {
         // since a base that exists is not a deletion.  Thus, there is nothing to worry about, in contrast to below where we do check
         // whether left-alignment shifted the start position.
         final int readStartOnReferenceHaplotype = readStartOnReferenceHaplotype(rightPaddedHaplotypeVsRefCigar, readToHaplotypeSWAlignment.getAlignmentOffset());
-
-
-        //final int readStartOnReference = referenceStart + haplotype.getAlignmentStartHapwrtRef() + readStartOnHaplotype;
 
         final int readStartOnReference = referenceStart + haplotype.getAlignmentStartHapwrtRef() + readStartOnReferenceHaplotype;
 

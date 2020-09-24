@@ -5,29 +5,17 @@ import htsjdk.samtools.Cigar;
 import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.CigarOperator;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
-import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.hellbender.utils.Tail;
 import org.broadinstitute.hellbender.utils.Utils;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAligner;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignment;
+import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignmentConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public final class CigarUtils {
-
-    // used in the bubble state machine to apply Smith-Waterman to the bubble sequence
-    // these values were chosen via optimization against the NA12878 knowledge base
-    public static final SWParameters NEW_SW_PARAMETERS = new SWParameters(200, -150, -260, -11);
-
-    // In Mutect2 and HaplotypeCaller reads are realigned to their *best* haplotypes, which is very different from a generic alignment.
-    // The {@code NEW_SW_PARAMETERS} penalize a substitution error more than an indel up to a length of 9 bases!
-    // Suppose, for example, that a read has a single substitution error, say C -> T, on its last base.  Those parameters
-    // would prefer to extend a deletion until the next T on the reference is found in order to avoid the substitution, which is absurd.
-    // Since these parameters are for aligning a read to the biological sequence we believe it comes from, the parameters
-    // we choose should correspond to sequencer error.  They *do not* have anything to do with the prevalence of true variation!
-    public static final SWParameters ALIGNMENT_TO_BEST_HAPLOTYPE_SW_PARAMETERS = new SWParameters(10, -15, -30, -5);
 
     private static final String SW_PAD = "NNNNNNNNNN";
 
@@ -194,7 +182,7 @@ public final class CigarUtils {
 
         final String paddedRef = SW_PAD + new String(refSeq) + SW_PAD;
         final String paddedPath = SW_PAD + new String(altSeq) + SW_PAD;
-        final SmithWatermanAlignment alignment = aligner.align(paddedRef.getBytes(), paddedPath.getBytes(), NEW_SW_PARAMETERS, strategy);
+        final SmithWatermanAlignment alignment = aligner.align(paddedRef.getBytes(), paddedPath.getBytes(), SmithWatermanAlignmentConstants.NEW_SW_PARAMETERS, strategy);
 
         if ( isSWFailure(alignment) ) {
             return null;

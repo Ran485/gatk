@@ -18,6 +18,7 @@ import org.broadinstitute.hellbender.utils.read.GATKRead;
 import org.broadinstitute.hellbender.utils.read.ReadUtils;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAligner;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignment;
+import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignmentConstants;
 import org.jgrapht.EdgeFactory;
 
 import java.io.File;
@@ -596,7 +597,7 @@ public abstract class AbstractReadThreadingGraph extends BaseGraph<MultiDeBruijn
         final byte[] altBases = getBasesForPath(altPath, false);
 
         // run Smith-Waterman to determine the best alignment (and remove trailing deletions since they aren't interesting)
-        final SmithWatermanAlignment alignment = aligner.align(refBases, altBases, SmithWatermanAligner.STANDARD_NGS, SWOverhangStrategy.LEADING_INDEL);
+        final SmithWatermanAlignment alignment = aligner.align(refBases, altBases, SmithWatermanAlignmentConstants.STANDARD_NGS, SWOverhangStrategy.LEADING_INDEL);
         return new DanglingChainMergeHelper(altPath, refPath, altBases, refBases, AlignmentUtils.removeTrailingDeletions(alignment.getCigar()));
     }
 
@@ -628,7 +629,7 @@ public abstract class AbstractReadThreadingGraph extends BaseGraph<MultiDeBruijn
         final byte[] altBases = getBasesForPath(altPath, true);
 
         // run Smith-Waterman to determine the best alignment (and remove trailing deletions since they aren't interesting)
-        final SmithWatermanAlignment alignment = aligner.align(refBases, altBases, SmithWatermanAligner.STANDARD_NGS, SWOverhangStrategy.LEADING_INDEL);
+        final SmithWatermanAlignment alignment = aligner.align(refBases, altBases, SmithWatermanAlignmentConstants.STANDARD_NGS, SWOverhangStrategy.LEADING_INDEL);
         return new DanglingChainMergeHelper(altPath, refPath, altBases, refBases, AlignmentUtils.removeTrailingDeletions(alignment.getCigar()));
     }
 

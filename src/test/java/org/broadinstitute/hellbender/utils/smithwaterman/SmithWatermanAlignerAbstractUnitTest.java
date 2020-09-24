@@ -7,7 +7,6 @@ import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.hellbender.GATKBaseTest;
 import org.broadinstitute.hellbender.exceptions.GATKException;
-import org.broadinstitute.hellbender.utils.read.CigarUtils;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -143,7 +142,7 @@ public abstract class SmithWatermanAlignerAbstractUnitTest extends GATKBaseTest 
 
     @Test(dataProvider = "ComplexReadAlignedToRef")
     public void testReadAlignedToRefComplexAlignment(final String reference, final String read, final int expectedStart, final String expectedCigar) {
-        assertAlignmentMatchesExpected(reference, read, expectedStart, expectedCigar, SmithWatermanAligner.ORIGINAL_DEFAULT, SWOverhangStrategy.SOFTCLIP);
+        assertAlignmentMatchesExpected(reference, read, expectedStart, expectedCigar, SmithWatermanAlignmentConstants.ORIGINAL_DEFAULT, SWOverhangStrategy.SOFTCLIP);
     }
 
     @DataProvider(name = "OddNoAlignment")
@@ -170,7 +169,7 @@ public abstract class SmithWatermanAlignerAbstractUnitTest extends GATKBaseTest 
         final String read      = match + "GGG";
         final int expectedStart = 3;
         final String expectedCigar = "5M3S";
-        assertAlignmentMatchesExpected(reference, read, expectedStart, expectedCigar, SmithWatermanAligner.ORIGINAL_DEFAULT, SWOverhangStrategy.SOFTCLIP);
+        assertAlignmentMatchesExpected(reference, read, expectedStart, expectedCigar, SmithWatermanAlignmentConstants.ORIGINAL_DEFAULT, SWOverhangStrategy.SOFTCLIP);
     }
 
     @Test
@@ -180,7 +179,7 @@ public abstract class SmithWatermanAlignerAbstractUnitTest extends GATKBaseTest 
         final String alt =               "ACAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGA";
         final int expectedStart = 14;
         final String expectedCigar = "31M20S";
-        assertAlignmentMatchesExpected(ref, alt, expectedStart, expectedCigar, SmithWatermanAligner.STANDARD_NGS, SWOverhangStrategy.SOFTCLIP);
+        assertAlignmentMatchesExpected(ref, alt, expectedStart, expectedCigar, SmithWatermanAlignmentConstants.STANDARD_NGS, SWOverhangStrategy.SOFTCLIP);
     }
 
     @Test
@@ -210,8 +209,8 @@ public abstract class SmithWatermanAlignerAbstractUnitTest extends GATKBaseTest 
         final SmithWatermanAlignment paddedAlignment;
         final SmithWatermanAlignment notPaddedAlignment;
         try (final SmithWatermanAligner aligner = getAligner()) {
-            paddedAlignment = aligner.align(paddedsRef.getBytes(), paddedsHap.getBytes(), CigarUtils.NEW_SW_PARAMETERS, SWOverhangStrategy.SOFTCLIP);
-            notPaddedAlignment = aligner.align(notPaddedsRef.getBytes(), notpaddedsHap.getBytes(), CigarUtils.NEW_SW_PARAMETERS, SWOverhangStrategy.SOFTCLIP);
+            paddedAlignment = aligner.align(paddedsRef.getBytes(), paddedsHap.getBytes(), SmithWatermanAlignmentConstants.NEW_SW_PARAMETERS, SWOverhangStrategy.SOFTCLIP);
+            notPaddedAlignment = aligner.align(notPaddedsRef.getBytes(), notpaddedsHap.getBytes(), SmithWatermanAlignmentConstants.NEW_SW_PARAMETERS, SWOverhangStrategy.SOFTCLIP);
         }
         //Now verify that the two sequences have the same alignment and not match positions.
         final Cigar rawPadded = paddedAlignment.getCigar();
@@ -247,7 +246,7 @@ public abstract class SmithWatermanAlignerAbstractUnitTest extends GATKBaseTest 
         final String matchingSection = "CCCCC";
         final String reference = "AAA" + matchingSection;
         final String read = matchingSection;
-        assertAlignmentMatchesExpected(reference, read, expectedStart, expectedCigar, SmithWatermanAligner.ORIGINAL_DEFAULT,
+        assertAlignmentMatchesExpected(reference, read, expectedStart, expectedCigar, SmithWatermanAlignmentConstants.ORIGINAL_DEFAULT,
                                        strategy);
     }
 
@@ -274,6 +273,6 @@ public abstract class SmithWatermanAlignerAbstractUnitTest extends GATKBaseTest 
     public void testSubstringMatchLong(int expectedStart, String expectedCigar, SWOverhangStrategy strategy) {
         final String reference = "ATAGAAAATAGTTTTTGGAAATATGGGTGAAGAGACATCTCCTCTTATGGAAAAAGGGATTCTAGAATTTAACAATAAATATTCCCAACTTTCCCCAAGGCTTTAAAATCTACCTTGAAGGAGCAGCTGATGTATTTCTAGAACAGACTTAGGTGTCTTGGTGTGGCCTGTAAAGAGATACTGTCTTTCTCTTTTGAGTGTAAGAGAGAAAGGACAGTCTACTCAATAAAGAGTGCTGGGAAAACTGAATATCCACACACAGAATAATAAAACTAGATCCTATCTCTCACCATATACAAAGATCAACTCAAAACAAATTAAAGACCTAAATGTAAGACAAGAAATTATAAAACTACTAGAAAAAAACACAAGGGAAATGCTTCAGGACATTGGC";
         final String read      = "AAAAAAA";
-        assertAlignmentMatchesExpected(reference, read, expectedStart, expectedCigar, SmithWatermanAligner.ORIGINAL_DEFAULT, strategy);
+        assertAlignmentMatchesExpected(reference, read, expectedStart, expectedCigar, SmithWatermanAlignmentConstants.ORIGINAL_DEFAULT, strategy);
     }
 }
