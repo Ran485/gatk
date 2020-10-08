@@ -8,6 +8,7 @@ import htsjdk.samtools.CigarOperator;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
+import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.hellbender.exceptions.GATKException;
 import org.broadinstitute.hellbender.utils.BaseUtils;
 import org.broadinstitute.hellbender.utils.IndexRange;
@@ -17,7 +18,6 @@ import org.broadinstitute.hellbender.utils.param.ParamUtils;
 import org.broadinstitute.hellbender.utils.pileup.PileupElement;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAligner;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignment;
-import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignmentConstants;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -42,6 +42,7 @@ public final class AlignmentUtils {
      * @param isInformative true if the read is differentially informative for one of the haplotypes
      *
      * @param aligner
+     * @param swParameters
      * @throws IllegalArgumentException if {@code originalRead} is {@code null} or {@code haplotype} is {@code null} or it
      *   does not have a Cigar or the {@code referenceStart} is invalid (less than 1).
      *
@@ -52,7 +53,8 @@ public final class AlignmentUtils {
                                                   final Haplotype refHaplotype,
                                                   final int referenceStart,
                                                   final boolean isInformative,
-                                                  final SmithWatermanAligner aligner) {
+                                                  final SmithWatermanAligner aligner,
+                                                  final SWParameters swParameters) {
         Utils.nonNull(originalRead);
         Utils.nonNull(haplotype);
         Utils.nonNull(refHaplotype);
@@ -61,7 +63,7 @@ public final class AlignmentUtils {
         if ( referenceStart < 1 ) { throw new IllegalArgumentException("reference start much be >= 1 but got " + referenceStart); }
 
         // compute the smith-waterman alignment of read -> haplotype
-        final SmithWatermanAlignment readToHaplotypeSWAlignment = aligner.align(haplotype.getBases(), originalRead.getBases(), SmithWatermanAlignmentConstants.ALIGNMENT_TO_BEST_HAPLOTYPE_SW_PARAMETERS, SWOverhangStrategy.SOFTCLIP);
+        final SmithWatermanAlignment readToHaplotypeSWAlignment = aligner.align(haplotype.getBases(), originalRead.getBases(), swParameters, SWOverhangStrategy.SOFTCLIP);
         if ( readToHaplotypeSWAlignment.getAlignmentOffset() == -1 ) {
             // sw can fail (reasons not clear) so if it happens just don't realign the read
             return originalRead;

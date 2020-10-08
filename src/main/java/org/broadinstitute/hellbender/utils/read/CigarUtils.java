@@ -9,7 +9,7 @@ import org.broadinstitute.hellbender.utils.Tail;
 import org.broadinstitute.hellbender.utils.Utils;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAligner;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignment;
-import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignmentConstants;
+import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignmentUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -182,7 +182,7 @@ public final class CigarUtils {
 
         final String paddedRef = SW_PAD + new String(refSeq) + SW_PAD;
         final String paddedPath = SW_PAD + new String(altSeq) + SW_PAD;
-        final SmithWatermanAlignment alignment = aligner.align(paddedRef.getBytes(), paddedPath.getBytes(), SmithWatermanAlignmentConstants.NEW_SW_PARAMETERS, strategy);
+        final SmithWatermanAlignment alignment = aligner.align(paddedRef.getBytes(), paddedPath.getBytes(), SmithWatermanAlignmentUtils.NEW_SW_PARAMETERS, strategy);
 
         if ( isSWFailure(alignment) ) {
             return null;
