@@ -17,17 +17,18 @@ import org.broadinstitute.hellbender.utils.read.CigarUtils;
  *  </p>
  */
 public final class SmithWatermanAlignmentConstants {
-
     /**
-     * {@code ORIGINAL_DEFAULT} is only used in test code.
+     * {@code ORIGINAL_DEFAULT} is only used in test code. It is worth noting that these tests are somewhat insensitive
+     * to the particular values used; (e.g., the majority pass if {@link SmithWatermanAlignmentConstants#STANDARD_NGS}
+     * is substituted, and all pass if {@link SmithWatermanAlignmentConstants#NEW_SW_PARAMETERS} is substituted).
      *
      * Original comments:
      *      match=1, mismatch = -1/3, gap=-(1+k/3)
      */
-    public static final SWParameters ORIGINAL_DEFAULT = new SWParameters(3, -1, -4, -3);
+    public static final SWParameters ORIGINAL_DEFAULT = new SWParameters(3, -1, -4, -3);;
 
     /**
-     * {@code STANDARD_NGS} is used in {@link AbstractReadThreadingGraph} methods for the recovery of dangling heads/tails.
+     * {@code STANDARD_NGS} is the default for {@link AbstractReadThreadingGraph} methods for the recovery of dangling heads/tails.
      *
      * Original comments:
      *      none
@@ -35,7 +36,7 @@ public final class SmithWatermanAlignmentConstants {
     public static final SWParameters STANDARD_NGS = new SWParameters(25, -50, -110, -6);
 
     /**
-     * {@code NEW_SW_PARAMETERS} is used in {@link CigarUtils#calculateCigar} and calling methods for haplotype-to-reference alignment.
+     * {@code NEW_SW_PARAMETERS} is the default for {@link CigarUtils#calculateCigar} for haplotype-to-reference alignment.
      * It was added in <a href="https://github.com/broadinstitute/gatk/pull/586">https://github.com/broadinstitute/gatk/pull/586</a>
      * at the same time as the {@link CigarUtils#calculateCigar} method. The original comments indicate that these values
      * were chosen via an optimization procedure, but no record or documentation of this procedure exists.
@@ -48,9 +49,8 @@ public final class SmithWatermanAlignmentConstants {
      */
     public static final SWParameters NEW_SW_PARAMETERS = new SWParameters(200, -150, -260, -11);
 
-
     /**
-     * {@code ALIGNMENT_TO_BEST_HAPLOTYPE_SW_PARAMETERS} is used for read-to-haplotype alignment and was added in
+     * {@code ALIGNMENT_TO_BEST_HAPLOTYPE_SW_PARAMETERS} is the default for read-to-haplotype alignment and was added in
      * <a href="https://github.com/broadinstitute/gatk/pull/4858">https://github.com/broadinstitute/gatk/pull/4858</a>
      * (superseding the use of {@link SmithWatermanAlignmentConstants#NEW_SW_PARAMETERS} in {@link AlignmentUtils#createReadAlignedToRef} in the
      * read-to-haplotype alignment step of that method).
