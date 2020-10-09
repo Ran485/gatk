@@ -49,6 +49,7 @@ import org.broadinstitute.hellbender.utils.pileup.ReadPileup;
 import org.broadinstitute.hellbender.utils.read.GATKRead;
 import org.broadinstitute.hellbender.utils.read.ReadUtils;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAligner;
+import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignmentUtils;
 import org.broadinstitute.hellbender.utils.variant.GATKVCFConstants;
 import org.broadinstitute.hellbender.utils.variant.GATKVCFHeaderLines;
 import picard.cmdline.programgroups.VariantFilteringProgramGroup;
@@ -216,7 +217,7 @@ public class FilterAlignmentArtifacts extends MultiVariantWalkerGroupedOnStart {
 
             final AlleleLikelihoods<GATKRead, Haplotype> readLikelihoods = likelihoodCalculationEngine.computeReadLikelihoods(assemblyResult,samplesList,reads);
             readLikelihoods.switchToNaturalLog();
-            final Map<GATKRead,GATKRead> readRealignments = AssemblyBasedCallerUtils.realignReadsToTheirBestHaplotype(readLikelihoods, assemblyResult.getReferenceHaplotype(), assemblyResult.getPaddedReferenceLoc(), ALIGNER, readToHaplotypeSWParameters);
+            final Map<GATKRead,GATKRead> readRealignments = AssemblyBasedCallerUtils.realignReadsToTheirBestHaplotype(readLikelihoods, assemblyResult.getReferenceHaplotype(), assemblyResult.getPaddedReferenceLoc(), ALIGNER, SmithWatermanAlignmentUtils.ALIGNMENT_TO_BEST_HAPLOTYPE_SW_PARAMETERS);
             readLikelihoods.changeEvidence(readRealignments);
             writeBamOutput(assemblyResult, readLikelihoods, new HashSet<>(readLikelihoods.alleles()), regionForGenotyping.getSpan());
 

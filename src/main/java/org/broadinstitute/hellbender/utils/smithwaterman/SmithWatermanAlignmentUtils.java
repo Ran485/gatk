@@ -1,5 +1,6 @@
 package org.broadinstitute.hellbender.utils.smithwaterman;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.hellbender.engine.GATKPath;
 import org.broadinstitute.hellbender.exceptions.GATKException;
@@ -77,8 +78,10 @@ public final class SmithWatermanAlignmentUtils {
      */
     public static final SWParameters ALIGNMENT_TO_BEST_HAPLOTYPE_SW_PARAMETERS = new SWParameters(10, -15, -30, -5);
 
-    private static final class SmithWatermanParametersTableReader extends TableReader<SWParameters> {
-        private enum SmithWatermanParametersTableColumn {
+    @VisibleForTesting
+    static final class SmithWatermanParametersTableReader extends TableReader<SWParameters> {
+        @VisibleForTesting
+        enum SmithWatermanParametersTableColumn {
             MATCH_VALUE("MATCH_VALUE"),
             MISMATCH_PENALTY("MISMATCH_PENALTY"),
             GAP_OPEN_PENALTY("GAP_OPEN_PENALTY"),
@@ -112,15 +115,22 @@ public final class SmithWatermanAlignmentUtils {
         }
     }
 
+    /**
+     * Reads in {@link SWParameters} from a TSV file. The file must contain a single column-header line corresponding
+     * to the columns defined in {@link SmithWatermanParametersTableReader.SmithWatermanParametersTableColumn}
+     * and a single row of integer parameter values.
+     */
     public static SWParameters readSmithWatermanParametersFromTSV(final GATKPath path) {
         Utils.nonNull(path);
         try (final SmithWatermanParametersTableReader tableReader = new SmithWatermanParametersTableReader(path.toPath())) {
             final List<SWParameters> swParametersList = tableReader.toList();
-            Utils.validate(swParametersList.size() == 1,
-                    String.format("TSV file contains more than one row of Smith-Waterman parameter values: %s", path.toString()));
+            if (swParametersList.size() != 1) {
+                throw new UserException.BadInput(String.format(
+                        "TSV file should contain a single column-header row and a single row of Smith-Waterman parameter values: %s", path.toPath()));
+            }
             return swParametersList.get(0);
         } catch (final IOException e) {
-            throw new UserException.BadInput(String.format("Could not read Smith-Waterman parameters from TSV file: %s", path.toString()));
+            throw new UserException.BadInput(String.format("Could not read Smith-Waterman parameters from TSV file: %s", path.toPath()));
         }
     }
 }
