@@ -252,6 +252,7 @@ public final class AssemblyBasedCallerUtils {
                                                   final ReferenceSequenceFile referenceReader,
                                                   final ReadThreadingAssembler assemblyEngine,
                                                   final SmithWatermanAligner aligner,
+                                                  final SWParameters swParameters,
                                                   final boolean correctOverlappingBaseQualities){
         finalizeRegion(region, argumentCollection.assemblerArgs.errorCorrectReads, argumentCollection.dontUseSoftClippedBases, (byte)(argumentCollection.minBaseQualityScore - 1), header, sampleList, correctOverlappingBaseQualities);
         if( argumentCollection.assemblerArgs.debugAssembly) {
@@ -273,9 +274,9 @@ public final class AssemblyBasedCallerUtils {
                 : new PileupReadErrorCorrector(argumentCollection.assemblerArgs.pileupErrorCorrectionLogOdds, header);
         try {
             final AssemblyResultSet assemblyResultSet = assemblyEngine.runLocalAssembly(region, refHaplotype, fullReferenceWithPadding,
-                    paddedReferenceLoc, readErrorCorrector, header, aligner);
+                    paddedReferenceLoc, readErrorCorrector, header, aligner, swParameters);
             if (!givenAlleles.isEmpty()) {
-                addGivenAlleles(region.getPaddedSpan().getStart(), givenAlleles, argumentCollection.maxMnpDistance, aligner, refHaplotype, assemblyResultSet);
+                addGivenAlleles(region.getPaddedSpan().getStart(), givenAlleles, argumentCollection.maxMnpDistance, aligner, swParameters, refHaplotype, assemblyResultSet);
             }
 
             assemblyResultSet.setDebug(argumentCollection.assemblerArgs.debugAssembly);
@@ -296,7 +297,7 @@ public final class AssemblyBasedCallerUtils {
 
     @VisibleForTesting
     static void addGivenAlleles(final int assemblyRegionStart, final List<VariantContext> givenAlleles, final int maxMnpDistance,
-                                final SmithWatermanAligner aligner, final Haplotype refHaplotype, final AssemblyResultSet assemblyResultSet) {
+                                final SmithWatermanAligner aligner, final SWParameters swParameters, final Haplotype refHaplotype, final AssemblyResultSet assemblyResultSet) {
         final int activeRegionStart = refHaplotype.getAlignmentStartHapwrtRef();
         final Map<Integer, VariantContext> assembledVariants = assemblyResultSet.getVariationEvents(maxMnpDistance).stream()
                 .collect(Collectors.groupingBy(VariantContext::getStart, Collectors.collectingAndThen(Collectors.toList(), AssemblyBasedCallerUtils::makeMergedVariantContext)));
@@ -338,7 +339,7 @@ public final class AssemblyBasedCallerUtils {
 
                     final Haplotype insertedHaplotype = baseHaplotype.insertAllele(longerRef, givenAllele, activeRegionStart + givenVC.getStart() - assemblyRegionStart, givenVC.getStart());
                     if (insertedHaplotype != null) { // can be null if the requested allele can't be inserted into the haplotype
-                        final Cigar cigar = CigarUtils.calculateCigar(refHaplotype.getBases(), insertedHaplotype.getBases(), aligner, SWOverhangStrategy.INDEL);
+                        final Cigar cigar = CigarUtils.calculateCigar(refHaplotype.getBases(), insertedHaplotype.getBases(), aligner, swParameters, SWOverhangStrategy.INDEL);
                         insertedHaplotype.setCigar(cigar);
                         insertedHaplotype.setGenomeLocation(refHaplotype.getGenomeLocation());
                         insertedHaplotype.setAlignmentStartHapwrtRef(activeRegionStart);

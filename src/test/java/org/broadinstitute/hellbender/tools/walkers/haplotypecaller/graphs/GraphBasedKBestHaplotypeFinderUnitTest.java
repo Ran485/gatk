@@ -5,12 +5,14 @@ import htsjdk.samtools.Cigar;
 import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.CigarOperator;
 import htsjdk.samtools.TextCigarCodec;
+import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.hellbender.GATKBaseTest;
 import org.broadinstitute.hellbender.tools.walkers.haplotypecaller.readthreading.MultiDeBruijnVertex;
 import org.broadinstitute.hellbender.tools.walkers.haplotypecaller.readthreading.ReadThreadingGraph;
 import org.broadinstitute.hellbender.utils.Utils;
 import org.broadinstitute.hellbender.utils.read.AlignmentUtils;
 import org.broadinstitute.hellbender.utils.read.CigarBuilder;
+import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAlignmentUtils;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanJavaAligner;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
@@ -20,6 +22,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 public final class GraphBasedKBestHaplotypeFinderUnitTest extends GATKBaseTest {
+    private static final SWParameters SW_PARAMETERS_FOR_CALCULATE_CIGAR = SmithWatermanAlignmentUtils.NEW_SW_PARAMETERS;
 
     @Test
     public void testScore(){
@@ -213,7 +216,7 @@ public final class GraphBasedKBestHaplotypeFinderUnitTest extends GATKBaseTest {
         expectedCigar.add(new CigarElement(postRef.length(), CigarOperator.M));
 
         final String ref = preRef + v2Ref.getSequenceString() + postRef;
-        Assert.assertEquals(path.calculateCigar(ref.getBytes(), SmithWatermanJavaAligner.getInstance()).toString(), expectedCigar.make().toString(), "Cigar string mismatch");
+        Assert.assertEquals(path.calculateCigar(ref.getBytes(), SmithWatermanJavaAligner.getInstance(), SW_PARAMETERS_FOR_CALCULATE_CIGAR).toString(), expectedCigar.make().toString(), "Cigar string mismatch");
     }
 
     @DataProvider(name = "GetBasesData")
@@ -366,7 +369,7 @@ public final class GraphBasedKBestHaplotypeFinderUnitTest extends GATKBaseTest {
             expectedCigar.add(new CigarElement(postAltOption.length(), CigarOperator.I));
         }
 
-        Assert.assertEquals(path.calculateCigar(ref.getBytes(), SmithWatermanJavaAligner.getInstance()).toString(),
+        Assert.assertEquals(path.calculateCigar(ref.getBytes(), SmithWatermanJavaAligner.getInstance(), SW_PARAMETERS_FOR_CALCULATE_CIGAR).toString(),
                 expectedCigar.make().toString(),
                 "Cigar string mismatch: ref = " + ref + " alt " + new String(path.getBases()));
     }
@@ -391,8 +394,8 @@ public final class GraphBasedKBestHaplotypeFinderUnitTest extends GATKBaseTest {
         final Path<SeqVertex,BaseEdge> altPath = bestPaths.get(1);
 
         final String refString = top.getSequenceString() + ref.getSequenceString() + bot.getSequenceString();
-        Assert.assertEquals(refPath.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance()).toString(), "10M");
-        Assert.assertEquals(altPath.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance()).toString(), "1M3I5M3D1M");
+        Assert.assertEquals(refPath.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance(), SW_PARAMETERS_FOR_CALCULATE_CIGAR).toString(), "10M");
+        Assert.assertEquals(altPath.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance(), SW_PARAMETERS_FOR_CALCULATE_CIGAR).toString(), "1M3I5M3D1M");
     }
 
     @Test
@@ -411,7 +414,7 @@ public final class GraphBasedKBestHaplotypeFinderUnitTest extends GATKBaseTest {
       path is penalized for two extra forks despite it greedily looking the best at the start.
 
       Because the old behavior used to base pruning on the number of incoming edges < K, the edge (bot->midExt) would be created
-      first, then (top -> midExt) but (mid -> midExt) would never be created because midExt already has 2 incoming edges.                        
+      first, then (top -> midExt) but (mid -> midExt) would never be created because midExt already has 2 incoming edges.
       */
 
     public void testDegeneratePathPruningOptimizationCase() {
@@ -478,12 +481,12 @@ public final class GraphBasedKBestHaplotypeFinderUnitTest extends GATKBaseTest {
         final String refString = top.getSequenceString() + ref.getSequenceString() + bot.getSequenceString();
 
         logger.warn("RefPath : " + refPath + " cigar " + refPath.calculateCigar(refString.getBytes(),
-                                                                                SmithWatermanJavaAligner.getInstance()));
+                                                                                SmithWatermanJavaAligner.getInstance(), SW_PARAMETERS_FOR_CALCULATE_CIGAR));
         logger.warn("AltPath : " + altPath + " cigar " + altPath.calculateCigar(refString.getBytes(),
-                                                                                SmithWatermanJavaAligner.getInstance()));
+                                                                                SmithWatermanJavaAligner.getInstance(), SW_PARAMETERS_FOR_CALCULATE_CIGAR));
 
-        Assert.assertEquals(refPath.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance()).toString(), "51M");
-        Assert.assertEquals(altPath.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance()).toString(), "3M6I48M");
+        Assert.assertEquals(refPath.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance(), SW_PARAMETERS_FOR_CALCULATE_CIGAR).toString(), "51M");
+        Assert.assertEquals(altPath.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance(), SW_PARAMETERS_FOR_CALCULATE_CIGAR).toString(), "3M6I48M");
     }
 
     @Test
@@ -628,7 +631,7 @@ public final class GraphBasedKBestHaplotypeFinderUnitTest extends GATKBaseTest {
         expected.add(new CigarElement(padSize, CigarOperator.M));
 
         final String refString = top.getSequenceString() + ref.getSequenceString() + bot.getSequenceString();
-        final Cigar pathCigar = path.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance());
+        final Cigar pathCigar = path.calculateCigar(refString.getBytes(), SmithWatermanJavaAligner.getInstance(), SW_PARAMETERS_FOR_CALCULATE_CIGAR);
 
         logger.warn("diffs: " + ref + " vs. " + alt + " cigar " + midCigar);
         logger.warn("Path " + path + " with cigar " + pathCigar);

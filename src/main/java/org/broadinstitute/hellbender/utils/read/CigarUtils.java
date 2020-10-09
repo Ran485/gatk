@@ -5,6 +5,7 @@ import htsjdk.samtools.Cigar;
 import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.CigarOperator;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
+import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.hellbender.utils.Tail;
 import org.broadinstitute.hellbender.utils.Utils;
 import org.broadinstitute.hellbender.utils.smithwaterman.SmithWatermanAligner;
@@ -149,11 +150,12 @@ public final class CigarUtils {
      * or trailing deletion in order to maintain the original reference span of the alt haplotype.  This can occur, for example, when the ref
      * haplotype starts with N repeats of a long sequence and the alt haplotype starts with N-1 repeats.
      *
-     * @param aligner
      * @param refSeq the reference sequence that all of the bases in this path should align to
+     * @param aligner
+     * @param swParameters
      * @return a Cigar mapping this path to refSeq, or null if no reasonable alignment could be found
      */
-    public static Cigar calculateCigar(final byte[] refSeq, final byte[] altSeq, final SmithWatermanAligner aligner, final SWOverhangStrategy strategy) {
+    public static Cigar calculateCigar(final byte[] refSeq, final byte[] altSeq, final SmithWatermanAligner aligner, final SWParameters swParameters, final SWOverhangStrategy strategy) {
         Utils.nonNull(refSeq, "refSeq");
         Utils.nonNull(altSeq, "altSeq");
         if ( altSeq.length == 0 ) {
@@ -182,7 +184,7 @@ public final class CigarUtils {
 
         final String paddedRef = SW_PAD + new String(refSeq) + SW_PAD;
         final String paddedPath = SW_PAD + new String(altSeq) + SW_PAD;
-        final SmithWatermanAlignment alignment = aligner.align(paddedRef.getBytes(), paddedPath.getBytes(), SmithWatermanAlignmentUtils.NEW_SW_PARAMETERS, strategy);
+        final SmithWatermanAlignment alignment = aligner.align(paddedRef.getBytes(), paddedPath.getBytes(), swParameters, strategy);
 
         if ( isSWFailure(alignment) ) {
             return null;
